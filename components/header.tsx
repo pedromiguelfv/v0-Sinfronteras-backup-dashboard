@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ViewType, PanelTab } from '@/lib/types'
 
 interface HeaderProps {
@@ -20,6 +20,11 @@ interface HeaderProps {
 export function Header({ activeView, panelTab, onPanelTabChange }: HeaderProps) {
   const { theme, setTheme } = useTheme()
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
@@ -48,7 +53,7 @@ export function Header({ activeView, panelTab, onPanelTabChange }: HeaderProps) 
             <p className="text-sm text-foreground/60">{headerSubtitle}</p>
           </div>
           <div className="flex items-center gap-3">
-            {(activeView === 'panel' || activeView === 'audit') && (
+            {mounted && (activeView === 'panel' || activeView === 'audit') && (
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="gap-2">
@@ -65,19 +70,21 @@ export function Header({ activeView, panelTab, onPanelTabChange }: HeaderProps) 
               </Popover>
             )}
             
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleTheme}
-              className="rounded-lg"
-              title={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
-            >
-              {theme === 'dark' ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-            </Button>
+            {mounted && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleTheme}
+                className="rounded-lg"
+                title={`Cambiar a modo ${theme === 'dark' ? 'claro' : 'oscuro'}`}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
+              </Button>
+            )}
           </div>
         </div>
 
