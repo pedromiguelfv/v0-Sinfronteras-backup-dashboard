@@ -6,8 +6,14 @@ import { Badge } from '@/components/ui/badge'
 import { Shield, AlertTriangle, Activity, CheckCircle2, XCircle } from 'lucide-react'
 import { mockData } from '@/lib/mock-data'
 import { KPICard } from '@/components/kpi-card'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 
-export function DailyStatusView() {
+interface DailyStatusViewProps {
+  selectedDate: Date
+}
+
+export function DailyStatusView({ selectedDate }: DailyStatusViewProps) {
   const { dataDiario, dataConfig, dataLogs } = mockData
 
   // Calcular KPIs
@@ -118,6 +124,16 @@ export function DailyStatusView() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Selected Date Display */}
+      {selectedDate instanceof Date && !isNaN(selectedDate.getTime()) && (
+        <div className="flex items-center justify-center text-sm text-foreground/60">
+          <span className="font-medium">Datos mostrados para:</span>
+          <span className="ml-2 font-semibold text-foreground">
+            {format(selectedDate, 'EEEE, d MMMM yyyy', { locale: es })}
+          </span>
+        </div>
+      )}
     </div>
   )
 }

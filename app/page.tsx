@@ -12,20 +12,27 @@ import { ViewType, PanelTab } from '@/lib/types'
 export default function Home() {
   const [activeView, setActiveView] = useState<ViewType>('panel')
   const [panelTab, setPanelTab] = useState<PanelTab>('daily')
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
   return (
     <div className="flex h-screen bg-background">
       <Sidebar activeView={activeView} onViewChange={setActiveView} />
       <main className="flex-1 flex flex-col overflow-hidden">
-        <Header activeView={activeView} panelTab={panelTab} onPanelTabChange={setPanelTab} />
+        <Header 
+          activeView={activeView} 
+          panelTab={panelTab} 
+          onPanelTabChange={setPanelTab}
+          selectedDate={selectedDate}
+          onSelectedDateChange={setSelectedDate}
+        />
         <div className="flex-1 overflow-auto">
           {activeView === 'panel' && (
             <>
-              {panelTab === 'daily' && <DailyStatusView />}
+              {panelTab === 'daily' && <DailyStatusView selectedDate={selectedDate} />}
               {panelTab === 'historical' && <HistoricalReportView />}
             </>
           )}
-          {activeView === 'audit' && <AuditLogsView />}
+          {activeView === 'audit' && <AuditLogsView selectedDate={selectedDate} />}
           {activeView === 'config' && <ConfigurationView />}
         </div>
       </main>

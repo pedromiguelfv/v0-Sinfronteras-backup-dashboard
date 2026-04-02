@@ -8,18 +8,25 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ViewType, PanelTab } from '@/lib/types'
 
 interface HeaderProps {
   activeView: ViewType
   panelTab: PanelTab
   onPanelTabChange: (tab: PanelTab) => void
+  selectedDate: Date
+  onSelectedDateChange: (date: Date) => void
 }
 
-export function Header({ activeView, panelTab, onPanelTabChange }: HeaderProps) {
+export function Header({ 
+  activeView, 
+  panelTab, 
+  onPanelTabChange,
+  selectedDate,
+  onSelectedDateChange
+}: HeaderProps) {
   const { theme, setTheme } = useTheme()
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -64,7 +71,7 @@ export function Header({ activeView, panelTab, onPanelTabChange }: HeaderProps) 
                   <Calendar
                     mode="single"
                     selected={selectedDate}
-                    onSelect={(date) => date && setSelectedDate(date)}
+                    onSelect={(date) => date && onSelectedDateChange(date)}
                   />
                 </PopoverContent>
               </Popover>

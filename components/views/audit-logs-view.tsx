@@ -4,8 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { mockData } from '@/lib/mock-data'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 
-export function AuditLogsView() {
+interface AuditLogsViewProps {
+  selectedDate: Date
+}
+
+export function AuditLogsView({ selectedDate }: AuditLogsViewProps) {
   const { dataLogs } = mockData
 
   return (
@@ -13,7 +19,9 @@ export function AuditLogsView() {
       <Card>
         <CardHeader>
           <CardTitle>Eventos del Sistema</CardTitle>
-          <CardDescription>Registro completo de actividades y operaciones</CardDescription>
+          <CardDescription>
+            Registro de actividades {selectedDate instanceof Date && !isNaN(selectedDate.getTime()) ? `para ${format(selectedDate, 'EEEE, d MMMM yyyy', { locale: es })}` : ''}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
