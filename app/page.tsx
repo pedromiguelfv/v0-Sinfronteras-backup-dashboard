@@ -1,0 +1,34 @@
+'use client'
+
+import { useState } from 'react'
+import { Sidebar } from '@/components/sidebar'
+import { Header } from '@/components/header'
+import { DailyStatusView } from '@/components/views/daily-status-view'
+import { HistoricalReportView } from '@/components/views/historical-report-view'
+import { AuditLogsView } from '@/components/views/audit-logs-view'
+import { ConfigurationView } from '@/components/views/configuration-view'
+import { ViewType, PanelTab } from '@/lib/types'
+
+export default function Home() {
+  const [activeView, setActiveView] = useState<ViewType>('panel')
+  const [panelTab, setPanelTab] = useState<PanelTab>('daily')
+
+  return (
+    <div className="flex h-screen bg-background">
+      <Sidebar activeView={activeView} onViewChange={setActiveView} />
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <Header activeView={activeView} panelTab={panelTab} onPanelTabChange={setPanelTab} />
+        <div className="flex-1 overflow-auto">
+          {activeView === 'panel' && (
+            <>
+              {panelTab === 'daily' && <DailyStatusView />}
+              {panelTab === 'historical' && <HistoricalReportView />}
+            </>
+          )}
+          {activeView === 'audit' && <AuditLogsView />}
+          {activeView === 'config' && <ConfigurationView />}
+        </div>
+      </main>
+    </div>
+  )
+}
