@@ -13,6 +13,8 @@ export default function Home() {
   const [activeView, setActiveView] = useState<ViewType>('panel')
   const [panelTab, setPanelTab] = useState<PanelTab>('daily')
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [startDate, setStartDate] = useState<Date>(new Date(new Date().setDate(new Date().getDate() - 30)))
+  const [endDate, setEndDate] = useState<Date>(new Date())
 
   return (
     <div className="flex h-screen bg-background">
@@ -24,12 +26,16 @@ export default function Home() {
           onPanelTabChange={setPanelTab}
           selectedDate={selectedDate}
           onSelectedDateChange={setSelectedDate}
+          startDate={startDate}
+          endDate={endDate}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
         />
         <div className="flex-1 overflow-auto">
           {activeView === 'panel' && (
             <>
               {panelTab === 'daily' && <DailyStatusView selectedDate={selectedDate} />}
-              {panelTab === 'historical' && <HistoricalReportView />}
+              {panelTab === 'historical' && <HistoricalReportView startDate={startDate} endDate={endDate} />}
             </>
           )}
           {activeView === 'audit' && <AuditLogsView selectedDate={selectedDate} />}

@@ -10,6 +10,7 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { useEffect, useState } from 'react'
 import { ViewType, PanelTab } from '@/lib/types'
+import { DateRangePicker } from '@/components/date-range-picker'
 
 interface HeaderProps {
   activeView: ViewType
@@ -17,6 +18,10 @@ interface HeaderProps {
   onPanelTabChange: (tab: PanelTab) => void
   selectedDate: Date
   onSelectedDateChange: (date: Date) => void
+  startDate: Date
+  endDate: Date
+  onStartDateChange: (date: Date) => void
+  onEndDateChange: (date: Date) => void
 }
 
 export function Header({ 
@@ -24,7 +29,11 @@ export function Header({
   panelTab, 
   onPanelTabChange,
   selectedDate,
-  onSelectedDateChange
+  onSelectedDateChange,
+  startDate,
+  endDate,
+  onStartDateChange,
+  onEndDateChange
 }: HeaderProps) {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
@@ -60,11 +69,38 @@ export function Header({
             <p className="text-sm text-foreground/60">{headerSubtitle}</p>
           </div>
           <div className="flex items-center gap-3">
-            {mounted && (activeView === 'panel' || activeView === 'audit') && (
+            {mounted && activeView === 'panel' && panelTab === 'daily' && (
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="gap-2">
-                    📅 {format(selectedDate, 'dd MMM yyyy', { locale: es })}
+                    📅 {selectedDate instanceof Date && !isNaN(selectedDate.getTime()) ? format(selectedDate, 'dd MMM yyyy', { locale: es }) : 'Seleccionar'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && onSelectedDateChange(date)}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+
+            {mounted && activeView === 'panel' && panelTab === 'historical' && (
+              <DateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                onStartDateChange={onStartDateChange}
+                onEndDateChange={onEndDateChange}
+                label="Rango de análisis"
+              />
+            )}
+
+            {mounted && activeView === 'audit' && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    📅 {selectedDate instanceof Date && !isNaN(selectedDate.getTime()) ? format(selectedDate, 'dd MMM yyyy', { locale: es }) : 'Seleccionar'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">

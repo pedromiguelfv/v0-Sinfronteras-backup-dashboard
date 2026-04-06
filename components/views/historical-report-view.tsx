@@ -1,36 +1,22 @@
 'use client'
 
-import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Progress } from '@/components/ui/progress'
 import { mockData } from '@/lib/mock-data'
-import { DateRangePicker } from '@/components/date-range-picker'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
-export function HistoricalReportView() {
+interface HistoricalReportViewProps {
+  startDate: Date
+  endDate: Date
+}
+
+export function HistoricalReportView({ startDate, endDate }: HistoricalReportViewProps) {
   const { dataHistorico } = mockData
-  const [startDate, setStartDate] = useState(new Date(new Date().setDate(new Date().getDate() - 30)))
-  const [endDate, setEndDate] = useState(new Date())
 
   return (
     <div className="p-6 space-y-6">
-      {/* Date Range Picker */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-foreground">Análisis Histórico</h2>
-          <p className="text-sm text-foreground/60 mt-1">Efectividad de respaldos por servidor</p>
-        </div>
-        <DateRangePicker
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
-          label="Rango de análisis"
-        />
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Reporte de Efectividad</CardTitle>
