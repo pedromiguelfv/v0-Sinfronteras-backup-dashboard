@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +15,11 @@ interface DailyStatusViewProps {
 }
 
 export function DailyStatusView({ selectedDate }: DailyStatusViewProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const { dataDiario, dataConfig, dataLogs } = mockData
 
   // Calcular KPIs
@@ -126,7 +132,7 @@ export function DailyStatusView({ selectedDate }: DailyStatusViewProps) {
       </Card>
 
       {/* Selected Date Display */}
-      {selectedDate instanceof Date && !isNaN(selectedDate.getTime()) && (
+      {mounted && selectedDate instanceof Date && !isNaN(selectedDate.getTime()) && (
         <div className="flex items-center justify-center text-sm text-foreground/60">
           <span className="font-medium">Datos mostrados para:</span>
           <span className="ml-2 font-semibold text-foreground">
