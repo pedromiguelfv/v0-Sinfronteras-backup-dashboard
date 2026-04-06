@@ -13,31 +13,29 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 
-// Definimos el "molde" de los datos que nos enviará Python
+// Importamos el Gráfico y su Interfaz
+import { EffectivenessChart, type DailyTrend } from "@/components/charts/effectiveness-chart"
+
 interface HistoricalData {
   servidor: string
   total_dias_evaluados: number
   dias_exitosos: number
   dias_con_alertas: number
   porcentaje_exito: number
-  estado_tendencia: string
 }
 
 export function HistoricalReportView() {
-  // 1. ESTADOS DE REACT
-  // Por defecto, calculamos la efectividad de los últimos 7 días
   const [date, setDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 7),
     to: new Date(),
   })
   
   const [reportData, setReportData] = useState<HistoricalData[]>([])
+  const [trendData, setTrendData] = useState<DailyTrend[]>([]) // NUEVO: Estado para el gráfico
   const [isLoading, setIsLoading] = useState(true)
 
-  // 2. EL MOTOR DE EXTRACCIÓN (Llamada a la API de Reportes)
   useEffect(() => {
     const fetchReport = async () => {
-      // Solo hacemos la petición si el usuario ha seleccionado ambas fechas (Inicio y Fin)
       if (!date?.from || !date?.to) return
 
       setIsLoading(true)
@@ -46,41 +44,42 @@ export function HistoricalReportView() {
         const fechaFin = format(date.to, "yyyy-MM-dd")
         const API_BASE = "http://127.0.0.1:8000"
 
-        // Disparamos la petición al Endpoint de Reportes
         const response = await fetch(
           `${API_BASE}/api/backups/reporte?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
         )
         const result = await response.json()
 
-        // Tu API de Python llama al array "resumen_ejecutivo", no "datos"
+        // 1. Cargamos la Tabla Analítica
         if (result.resumen_ejecutivo) {
           setReportData(result.resumen_ejecutivo)
-        } else if (result.datos) { 
-          // Por si acaso en el futuro lo estandarizas
-          setReportData(result.datos)
         } else {
           setReportData([])
         }
+
+        // 2. Cargamos el Gráfico de Tendencia Diaria
+        if (result.tendencia_diaria) {
+          setTrendData(result.tendencia_diaria)
+        } else {
+          setTrendData([])
+        }
       } catch (error) {
-        console.error("Error conectando con FastAPI (Reporte Histórico):", error)
+        console.error("Error conectando con FastAPI:", error)
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchReport()
-  }, [date]) // Este código se repite solo cada vez que el calendario cambia
+  }, [date])
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      {/* CABECERA */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Reporte Histórico de Efectividad</h2>
           <p className="text-muted-foreground">Analítica de rendimiento por servidor en el tiempo</p>
         </div>
         
-        {/* SELECTOR DE RANGO DE FECHAS */}
         <div className="flex items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
@@ -114,14 +113,16 @@ export function HistoricalReportView() {
                 defaultMonth={date?.from}
                 selected={date}
                 onSelect={setDate}
-                numberOfMonths={2} // Muestra 2 meses juntos para facilitar la selección
+                numberOfMonths={2}
               />
             </PopoverContent>
           </Popover>
         </div>
       </div>
 
-      {/* TABLA ANALÍTICA */}
+      {/* AQUÍ INYECTAMOS EL GRÁFICO CONECTADO A LA API */}
+      <EffectivenessChart data={trendData} isLoading={isLoading} />
+
       <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
@@ -130,7 +131,7 @@ export function HistoricalReportView() {
               <TableHead className="text-center">Días Evaluados</TableHead>
               <TableHead className="text-center">Exitosos</TableHead>
               <TableHead className="text-center">Fallos / Alertas</TableHead>
-              <TableHead className="w-[30%]">Efectividad</TableHead>
+              <TableHead className="w-[30%]">Efectividad Global</TableHead>
               <TableHead className="text-right">Tendencia</TableHead>
             </TableRow>
           </TableHeader>
@@ -152,12 +153,10 @@ export function HistoricalReportView() {
               </TableRow>
             ) : (
               reportData.map((row, i) => {
-                // LÓGICA DE NEGOCIO PARA COLORES
                 const isPerfect = row.porcentaje_exito === 100
                 const isWarning = row.porcentaje_exito < 100 && row.porcentaje_exito >= 80
                 const isCritical = row.porcentaje_exito < 80
 
-                // Decidimos el color de la barra de progreso
                 let progressColorClass = "bg-blue-600"
                 if (isPerfect) progressColorClass = "bg-emerald-500"
                 if (isWarning) progressColorClass = "bg-amber-500"
@@ -170,7 +169,6 @@ export function HistoricalReportView() {
                     <TableCell className="text-center font-mono text-emerald-500">{row.dias_exitosos}</TableCell>
                     <TableCell className="text-center font-mono text-red-500">{row.dias_con_alertas}</TableCell>
                     
-                    {/* COLUMNA ESTRELLA: BARRA DE PROGRESO DE EFECTIVIDAD */}
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="w-full">
@@ -187,7 +185,6 @@ export function HistoricalReportView() {
                       </div>
                     </TableCell>
 
-                    {/* TENDENCIA VISUAL (BADGES) */}
                     <TableCell className="text-right">
                       {isPerfect ? (
                         <Badge variant="outline" className="border-emerald-500/50 text-emerald-500 bg-emerald-500/10">

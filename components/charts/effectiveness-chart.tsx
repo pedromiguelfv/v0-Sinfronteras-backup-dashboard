@@ -3,70 +3,35 @@
 import { useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { eachDayOfInterval, format, isValid } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { Loader2 } from "lucide-react"
 
-interface HistoricalData {
-  servidor: string
-  porcentaje_exito: number
-  [key: string]: string | number
+// Estructura de datos que nos envía Python
+export interface DailyTrend {
+  date: string
+  effectiveness: number
+  fullDate: string
 }
 
 interface EffectivenessChartProps {
-  data: HistoricalData[]
-  startDate: Date
-  endDate: Date
+  data: DailyTrend[]
+  isLoading: boolean
 }
 
-export function EffectivenessChart({ data, startDate, endDate }: EffectivenessChartProps) {
+export function EffectivenessChart({ data, isLoading }: EffectivenessChartProps) {
+  // Estado para evitar errores de hidratación entre Servidor y Cliente con Recharts
   const [mounted, setMounted] = useState(false)
-  const [chartData, setChartData] = useState<any[]>([])
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  useEffect(() => {
-    if (!mounted || !startDate || !endDate) return
-
-    // Validate dates
-    if (!(startDate instanceof Date) || !(endDate instanceof Date) || 
-        !isValid(startDate) || !isValid(endDate)) {
-      setChartData([])
-      return
-    }
-
-    try {
-      // Generate chart data with daily effectiveness percentage
-      const days = eachDayOfInterval({ start: startDate, end: endDate })
-      
-      const newChartData = days.map((date) => {
-        // Calculate average effectiveness for the day
-        const avgEffectiveness = data.length > 0 
-          ? data.reduce((sum, item) => sum + (item.porcentaje_exito || 0), 0) / data.length
-          : 0
-        
-        return {
-          date: format(date, 'd MMM', { locale: es }),
-          effectiveness: Math.round(avgEffectiveness * 10) / 10,
-          fullDate: format(date, 'yyyy-MM-dd'),
-        }
-      })
-
-      setChartData(newChartData)
-    } catch (error) {
-      console.error('Error generating chart data:', error)
-      setChartData([])
-    }
-  }, [mounted, startDate, endDate, data])
-
-  // Custom tooltip
+  // Tooltip personalizado
   const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload[0]) {
+    if (active && payload && payload.length > 0) {
       return (
         <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
           <p className="text-sm font-medium text-foreground">{payload[0].payload.date}</p>
-          <p className="text-sm text-blue-500 font-semibold">
+          <p className="text-sm text-blue-600 font-semibold">
             Efectividad: {payload[0].value}%
           </p>
         </div>
@@ -75,64 +40,77 @@ export function EffectivenessChart({ data, startDate, endDate }: EffectivenessCh
     return null
   }
 
-  if (!mounted) {
+  // Prevenir renderizado hasta que el componente esté montado en el cliente
+  if (!mounted) return null
+
+  // Estado de carga
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Tendencia de Efectividad</CardTitle>
-          <CardDescription>Cargando gráfico...</CardDescription>
+          <CardDescription>Calculando métricas diarias desde el servidor...</CardDescription>
         </CardHeader>
-        <CardContent className="h-80" />
+        <CardContent className="h-[300px] flex flex-col items-center justify-center">
+             <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+             <p className="text-muted-foreground animate-pulse">Procesando tendencia...</p>
+        </CardContent>
       </Card>
     )
   }
 
-  if (chartData.length === 0) {
+  // Estado sin datos
+  if (!data || data.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Tendencia de Efectividad</CardTitle>
           <CardDescription>Selecciona un rango de fechas para visualizar la tendencia</CardDescription>
         </CardHeader>
-        <CardContent className="h-80 flex items-center justify-center text-foreground/60">
-          <p>No hay datos disponibles para el rango seleccionado</p>
+        <CardContent className="h-[300px] flex items-center justify-center text-foreground/60">
+          <p>No hay datos estadísticos para el rango seleccionado.</p>
         </CardContent>
       </Card>
     )
   }
 
+  // Renderizado del Gráfico Limpio
   return (
     <Card>
       <CardHeader>
         <CardTitle>Tendencia de Efectividad</CardTitle>
-        <CardDescription>Porcentaje promedio de efectividad por día</CardDescription>
+        <CardDescription>Porcentaje promedio de éxito global por día</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="w-full h-80">
+        <div className="w-full h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart 
-              data={chartData} 
+              data={data} 
               margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis 
                 dataKey="date" 
-                stroke="var(--foreground)"
-                style={{ fontSize: '12px' }}
+                stroke="#888888"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
               />
               <YAxis 
-                stroke="var(--foreground)"
+                stroke="#888888"
                 domain={[0, 100]}
-                label={{ value: 'Efectividad (%)', angle: -90, position: 'insideLeft' }}
-                style={{ fontSize: '12px' }}
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => `${value}%`}
               />
               <Tooltip content={<CustomTooltip />} />
               <Line
                 type="monotone"
                 dataKey="effectiveness"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ fill: '#3b82f6', r: 4 }}
+                stroke="#2563eb" // blue-600 de Tailwind
+                strokeWidth={3}
+                dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
                 isAnimationActive={true}
               />
