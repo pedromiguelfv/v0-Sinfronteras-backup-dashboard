@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { mockData } from '@/lib/mock-data'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { EffectivenessChart } from '@/components/charts/effectiveness-chart'
 
 interface HistoricalReportViewProps {
   startDate: Date
@@ -17,6 +18,12 @@ export function HistoricalReportView({ startDate, endDate }: HistoricalReportVie
 
   return (
     <div className="p-6 space-y-6">
+      {/* Effectiveness Chart */}
+      <EffectivenessChart 
+        data={dataHistorico} 
+        startDate={startDate} 
+        endDate={endDate} 
+      />
       <Card>
         <CardHeader>
           <CardTitle>Reporte de Efectividad</CardTitle>
