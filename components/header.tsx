@@ -4,13 +4,8 @@ import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { useEffect, useState } from 'react'
 import { ViewType, PanelTab } from '@/lib/types'
-import { DateRangePicker } from '@/components/date-range-picker'
 
 interface HeaderProps {
   activeView: ViewType
@@ -69,50 +64,7 @@ export function Header({
             <p className="text-sm text-foreground/60">{headerSubtitle}</p>
           </div>
           <div className="flex items-center gap-3">
-            {mounted && activeView === 'panel' && panelTab === 'daily' && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    📅 {selectedDate instanceof Date && !isNaN(selectedDate.getTime()) ? format(selectedDate, 'dd MMM yyyy', { locale: es }) : 'Seleccionar'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => date && onSelectedDateChange(date)}
-                  />
-                </PopoverContent>
-              </Popover>
-            )}
-
-            {mounted && activeView === 'panel' && panelTab === 'historical' && (
-              <DateRangePicker
-                startDate={startDate}
-                endDate={endDate}
-                onStartDateChange={onStartDateChange}
-                onEndDateChange={onEndDateChange}
-                label="Rango de análisis"
-              />
-            )}
-
-            {mounted && activeView === 'audit' && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    📅 {selectedDate instanceof Date && !isNaN(selectedDate.getTime()) ? format(selectedDate, 'dd MMM yyyy', { locale: es }) : 'Seleccionar'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => date && onSelectedDateChange(date)}
-                  />
-                </PopoverContent>
-              </Popover>
-            )}
-            
+            {/* Solo dejamos el botón de Modo Oscuro */}
             {mounted && (
               <Button
                 variant="outline"

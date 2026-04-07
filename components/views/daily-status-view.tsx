@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { CalendarIcon, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Activity, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -60,21 +59,26 @@ export function DailyStatusView() {
   const successfulBackups = Math.max(0, totalOrigins - criticalAlerts)
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 px-4 md:px-6 pb-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Estado de Respaldos Diarios</h2>
-          <p className="text-muted-foreground">Vista gerencial del sistema de respaldos</p>
+          {/* Cambiamos text-2xl por text-xl para reducir el tamaño del texto */}
+          <h2 className="text-xl font-bold tracking-tight capitalize">
+            {date ? format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es }) : "Cargando fecha..."}
+          </h2>
+          <p className="text-muted-foreground text-sm">Reporte diario de estado de respaldos</p>
         </div>
         <div className="flex items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
+              {/* Cambiamos size="icon" por dimensiones manuales (h-11 w-11) para un botón más grande */}
               <Button
-                variant={"outline"}
-                className={cn("w-[240px] justify-start text-left font-normal", !date && "text-muted-foreground")}
+                variant="outline"
+                className="h-14 w-14 p-0"
+                title="Cambiar fecha"
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP", { locale: es }) : <span>Seleccionar fecha</span>}
+                {/* Cambiamos h-5 w-5 por h-6 w-6 para agrandar el ícono */}
+                <CalendarIcon className="h-6 w-6" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
