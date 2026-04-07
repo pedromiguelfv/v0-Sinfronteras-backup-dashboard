@@ -19,7 +19,6 @@ export function DailyStatusView() {
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [dailyData, setDailyData] = useState<DailyData[]>([])
   const [totalOrigins, setTotalOrigins] = useState(0)
-  const [totalLogs, setTotalLogs] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
   // 2. EL MOTOR DE EXTRACCIÓN (Llamadas a la API)
@@ -27,26 +26,22 @@ export function DailyStatusView() {
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        // Formateamos la fecha seleccionada para Python (YYYY-MM-DD)
         const dateStr = date ? format(date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")
         const API_BASE = "http://127.0.0.1:8000"
 
-        // Disparamos las 3 peticiones en paralelo para que sea súper rápido
-        const [resConsolidado, resLogs, resConfig] = await Promise.all([
+        // Disparamos ahora solo 2 peticiones en paralelo (Más rápido)
+        const [resConsolidado, resConfig] = await Promise.all([
           fetch(`${API_BASE}/api/backups/consolidado?fecha=${dateStr}`),
-          fetch(`${API_BASE}/api/backups/logs?fecha=${dateStr}`),
           fetch(`${API_BASE}/api/config/locations`)
         ])
 
         const dataConsolidado = await resConsolidado.json()
-        const dataLogs = await resLogs.json()
         const dataConfig = await resConfig.json()
 
-        // Actualizamos las variables con la Realidad de la BD
+        // Actualizamos las variables
         if (dataConsolidado.datos) setDailyData(dataConsolidado.datos)
-        if (dataLogs.total_registros !== undefined) setTotalLogs(dataLogs.total_registros)
+        
         if (dataConfig.datos) {
-          // Filtramos solo los servidores que están activados
           const activeOrigins = dataConfig.datos.filter((loc: any) => loc.activated).length
           setTotalOrigins(activeOrigins)
         }
@@ -58,7 +53,7 @@ export function DailyStatusView() {
     }
 
     fetchData()
-  }, [date]) // Cada vez que el usuario cambie el DatePicker, este bloque se repite solo.
+  }, [date])
 
   // 3. MATEMÁTICA DE LOS KPIs
   const criticalAlerts = dailyData.filter((d) => d.estado_final.includes("Alerta")).length
@@ -89,7 +84,7 @@ export function DailyStatusView() {
         </div>
       </div>
 
- <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3">
         <KPICard
           title="Estado Global"
           value={`${successfulBackups} / ${totalOrigins}`}
@@ -98,19 +93,19 @@ export function DailyStatusView() {
           iconColor="text-blue-500"
         />
         <KPICard
+          title="Respaldos Exitosos"
+          value={successfulBackups.toString()}
+          subtitle="Completados"
+          icon={CheckCircle2}
+          iconColor="text-emerald-500"
+        />
+        <KPICard
           title="Alertas de Riesgo"
           value={criticalAlerts.toString()}
           subtitle="Crítica"
           icon={AlertTriangle}
           iconColor="text-red-500"
           valueColor={criticalAlerts > 0 ? "text-red-500" : "text-emerald-500"}
-        />
-        <KPICard
-          title="Eventos del Día"
-          value={totalLogs.toString()}
-          subtitle="Logs"
-          icon={Activity}
-          iconColor="text-slate-500"
         />
       </div>
 
