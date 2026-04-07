@@ -60,8 +60,8 @@ export function Header({
       <div className="px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{headerTitle}</h1>
-            <p className="text-sm text-foreground/60">{headerSubtitle}</p>
+            <h1 className="text-3xl font-bold text-foreground">{headerTitle}</h1>
+            <p className="text-m text-foreground/60">{headerSubtitle}</p>
           </div>
           <div className="flex items-center gap-3">
             {/* Solo dejamos el botón de Modo Oscuro */}
