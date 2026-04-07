@@ -119,6 +119,7 @@ export function DailyStatusView() {
           <TableHeader>
             <TableRow>
               <TableHead>Servidor Origen</TableHead>
+              <TableHead>Fecha/Hora Backup</TableHead>
               <TableHead>Última Ejecución n8n</TableHead>
               <TableHead className="text-center">Ubicación 1 (Local)</TableHead>
               <TableHead className="text-center">Ubicación 2 (Local)</TableHead>
@@ -129,7 +130,7 @@ export function DailyStatusView() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center">
+                <TableCell colSpan={7} className="h-32 text-center">
                   <div className="flex flex-col items-center justify-center text-muted-foreground">
                     <Loader2 className="mb-2 h-6 w-6 animate-spin text-blue-500" />
                     Cargando auditoría desde Supabase...
@@ -138,7 +139,7 @@ export function DailyStatusView() {
               </TableRow>
             ) : dailyData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
                   No hay datos registrados para esta fecha.
                 </TableCell>
               </TableRow>
@@ -156,6 +157,7 @@ export function DailyStatusView() {
                     )}
                   >
                     <TableCell className="font-medium">{row.servidor}</TableCell>
+                    <TableCell className="text-slate-400 font-mono text-sm">{row.fecha_hora_backup || "No registrado"}</TableCell>
                     <TableCell className="text-slate-400 font-mono text-sm">{row.ultima_ejecucion_n8n}</TableCell>
                     <TableCell className="text-center">
                       {row.ubicacion_1 === "PRESENTE" ? (
