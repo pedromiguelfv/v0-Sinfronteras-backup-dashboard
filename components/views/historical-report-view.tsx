@@ -72,38 +72,40 @@ export function HistoricalReportView() {
     fetchReport()
   }, [date])
 
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+ return (
+    <div className="space-y-6 animate-in fade-in duration-500 px-4 md:px-6 pb-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Reporte Histórico de Efectividad</h2>
-          <p className="text-muted-foreground">Analítica de rendimiento por servidor en el tiempo</p>
+          {/* El título ahora es dinámico y muestra el rango de fechas */}
+          <h2 className="text-xl font-bold tracking-tight capitalize">
+            {date?.from ? (
+              date.to ? (
+                <>
+                  {format(date.from, "d 'de' MMMM", { locale: es })} al {format(date.to, "d 'de' MMMM 'de' yyyy", { locale: es })}
+                </>
+              ) : (
+                format(date.from, "d 'de' MMMM 'de' yyyy", { locale: es })
+              )
+            ) : (
+              "Seleccionar periodo"
+            )}
+          </h2>
+          {/* Bajamos el título original para que quede como subtítulo explicativo */}
+          <p className="text-muted-foreground text-sm">Reporte Histórico de Efectividad</p>
         </div>
         
         <div className="flex items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
+              {/* Convertimos el botón gigante en un cuadrado minimalista (h-11 w-11) */}
               <Button
                 id="date"
-                variant={"outline"}
-                className={cn(
-                  "w-[300px] justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
+                variant="outline"
+                className="h-14 w-14 p-0"
+                title="Cambiar rango de fechas"
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date?.from ? (
-                  date.to ? (
-                    <>
-                      {format(date.from, "LLL dd, y", { locale: es })} -{" "}
-                      {format(date.to, "LLL dd, y", { locale: es })}
-                    </>
-                  ) : (
-                    format(date.from, "LLL dd, y", { locale: es })
-                  )
-                ) : (
-                  <span>Seleccionar rango de fechas</span>
-                )}
+                {/* Agrandamos el ícono a h-6 w-6 igual que en el Estado Diario */}
+                <CalendarIcon className="h-6 w-6" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
