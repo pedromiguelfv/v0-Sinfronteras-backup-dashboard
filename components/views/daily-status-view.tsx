@@ -26,7 +26,9 @@ export function DailyStatusView() {
       setIsLoading(true)
       try {
         const dateStr = date ? format(date, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")
-        const API_BASE = "http://127.0.0.1:8000"
+        
+        // Leemos la URL del entorno. Si por alguna razón falla, usamos localhost como respaldo seguro.
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
         // Disparamos ahora solo 2 peticiones en paralelo (Más rápido)
         const [resConsolidado, resConfig] = await Promise.all([

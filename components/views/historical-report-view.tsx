@@ -42,7 +42,7 @@ export function HistoricalReportView() {
       try {
         const fechaInicio = format(date.from, "yyyy-MM-dd")
         const fechaFin = format(date.to, "yyyy-MM-dd")
-        const API_BASE = "http://127.0.0.1:8000"
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
         const response = await fetch(
           `${API_BASE}/api/backups/reporte?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
