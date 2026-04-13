@@ -1,8 +1,13 @@
 'use client'
 
-import { LayoutDashboard, FileText, Settings } from 'lucide-react'
+import { LayoutDashboard, FileText, Settings, ChevronRight, Server } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ViewType } from '@/lib/types'
+import { 
+  Collapsible, 
+  CollapsibleContent, 
+  CollapsibleTrigger 
+} from "@/components/ui/collapsible"
 
 interface SidebarProps {
   activeView: ViewType
@@ -10,10 +15,10 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
+  // 1. Dejamos solo los botones de navegación directa en el array
   const navItems = [
     { id: 'panel', label: 'Panel Gerencial', icon: LayoutDashboard },
     { id: 'audit', label: 'Auditoría de Logs', icon: FileText },
-    { id: 'config', label: 'Configuración', icon: Settings },
   ]
 
   return (
@@ -24,6 +29,7 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
       </div>
       
       <nav className="flex-1 p-4 space-y-2">
+        {/* 2. Renderizamos los ítems principales */}
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = activeView === item.id
@@ -44,6 +50,44 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
             </button>
           )
         })}
+
+        {/* 3. Renderizamos el Submenú Colapsable para Configuración */}
+        <Collapsible 
+          className="group/collapsible"
+          defaultOpen={activeView === 'config'} // Se abre automáticamente si estamos en la vista
+        >
+          <CollapsibleTrigger asChild>
+            <button
+              className={cn(
+                'w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors text-sidebar-foreground hover:bg-sidebar-accent'
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Settings className="w-5 h-5" />
+                <span className="font-medium">Configuración</span>
+              </div>
+              <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            </button>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent>
+            <div className="mt-1 space-y-1">
+              <button
+                onClick={() => onViewChange('config' as ViewType)}
+                className={cn(
+                  'w-full flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm text-left transition-colors',
+                  activeView === 'config'
+                    ? 'bg-sidebar-primary text-sidebar-primary-foreground font-medium'
+                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                )}
+              >
+                <Server className="w-4 h-4" />
+                <span>Catálogo de Servidores</span>
+              </button>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
       </nav>
 
       <div className="p-4 border-t border-sidebar-border text-xs text-sidebar-foreground/50">
