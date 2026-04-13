@@ -1,12 +1,7 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
-
-// 1. Quitamos los guiones bajos y preparamos la fuente principal
-const geistSans = Geist({ subsets: ["latin"] });
-const geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Dashboard Monitoreo de Backups - Sinfronteras',
@@ -20,8 +15,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      {/* 2. En lugar de "font-sans", le pasamos el nombre exacto de la fuente de Google */}
-      <body className={`${geistSans.className} antialiased`}>
+      <head>
+        {/* El NAVEGADOR del usuario descargará las fuentes, Docker no hará nada aquí */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet" />
+        
+        {/* Inyectamos las variables maestras de Tailwind para evitar "textos extraños" */}
+        <style>{`
+          :root {
+            --font-sans: 'Geist', sans-serif;
+            --font-mono: 'Geist Mono', monospace;
+          }
+          body {
+            font-family: var(--font-sans);
+          }
+        `}</style>
+      </head>
+      
+      <body className="antialiased font-sans">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           {children}
           <Analytics />
