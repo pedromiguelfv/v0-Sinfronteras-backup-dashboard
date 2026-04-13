@@ -1,14 +1,15 @@
 'use client'
 
 import React, { useState, useEffect } from "react"
-import { format } from "date-fns" // <-- Importamos format
+import { format } from "date-fns" 
 import { 
   Plus, 
   Loader2, 
   Server, 
   CheckCircle2, 
   XCircle, 
-  RefreshCw
+  RefreshCw,
+  Pencil // <-- Añadimos el ícono del lápiz
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -48,6 +49,15 @@ export function ConfigurationView() {
   const [isLoading, setIsLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
   const [newLocationName, setNewLocationName] = useState("")
+  
+  // NUEVOS ESTADOS: Para controlar el modal de edición
+  const [editModal, setEditModal] = useState({
+    isOpen: false,
+    id: null as number | null,
+    location: ''
+  })
+  const [isUpdatingName, setIsUpdatingName] = useState(false)
+
   const { toast } = useToast()
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
@@ -133,8 +143,50 @@ export function ConfigurationView() {
     }
   }
 
+  // 4. NUEVAS FUNCIONES: Abrir modal y Guardar edición de nombre
+  const openEditModal = (id: number, currentLocation: string) => {
+    setEditModal({ isOpen: true, id, location: currentLocation })
+  }
+
+  const handleUpdateName = async () => {
+    if (!editModal.id || !editModal.location.trim()) return
+
+    setIsUpdatingName(true)
+    try {
+      const res = await fetch(`${API_BASE}/api/config/locations/${editModal.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location: editModal.location })
+      })
+
+      if (!res.ok) throw new Error('Error al actualizar el nombre')
+
+      // Actualización optimista en el estado local
+      setLocations(locations.map(loc => 
+        loc.id === editModal.id 
+          ? { ...loc, location: editModal.location.toUpperCase() } 
+          : loc
+      ))
+      
+      toast({
+        title: "Servidor actualizado",
+        description: "El nombre se ha modificado correctamente.",
+      })
+      
+      setEditModal({ isOpen: false, id: null, location: '' })
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo actualizar el servidor. Intenta nuevamente.",
+      })
+    } finally {
+      setIsUpdatingName(false)
+    }
+  }
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 px-4 md:px-6 pb-6">
+    <div className="space-y-6 animate-in fade-in duration-500 px-4 md:px-6 pb-6 relative">
       
       {/* HEADER UNIFICADO */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -166,6 +218,7 @@ export function ConfigurationView() {
                     placeholder="Ej: 809 PDV AYACUCHO" 
                     value={newLocationName}
                     onChange={(e) => setNewLocationName(e.target.value)}
+                    className="uppercase"
                   />
                 </div>
               </div>
@@ -182,7 +235,7 @@ export function ConfigurationView() {
             </DialogContent>
           </Dialog>
 
-          <Button variant="outline" className="h-11 w-11 p-0" onClick={fetchLocations}>
+          <Button variant="outline" className="h-11 w-11 p-0" onClick={fetchLocations} title="Actualizar datos">
             <RefreshCw className={isLoading ? "h-5 w-5 animate-spin" : "h-5 w-5"} />
           </Button>
         </div>
@@ -197,7 +250,7 @@ export function ConfigurationView() {
               <TableHead>Nombre del Servidor</TableHead>
               <TableHead>Fecha Registro</TableHead>
               <TableHead className="text-center">Estado</TableHead>
-              <TableHead className="text-right">Habilitar / Deshabilitar</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -226,7 +279,6 @@ export function ConfigurationView() {
                       <span className="font-medium">{loc.location}</span>
                     </div>
                   </TableCell>
-                  {/* NUEVO FORMATO DE FECHA APLICADO AQUÍ */}
                   <TableCell className="text-muted-foreground text-sm font-mono">
                     {loc.created_at ? format(new Date(loc.created_at), "yyyy-MM-dd") : 'N/A'}
                   </TableCell>
@@ -242,10 +294,21 @@ export function ConfigurationView() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end items-center gap-3">
+                    {/* INTEGRACIÓN DEL BOTÓN DE EDICIÓN JUNTO AL SWITCH */}
+                    <div className="flex justify-end items-center gap-4">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        onClick={() => openEditModal(loc.id, loc.location)}
+                        title="Editar nombre"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Switch 
                         checked={loc.activated}
                         onCheckedChange={() => handleToggleStatus(loc.id, loc.activated)}
+                        title={loc.activated ? "Desactivar servidor" : "Activar servidor"}
                       />
                     </div>
                   </TableCell>
@@ -255,6 +318,59 @@ export function ConfigurationView() {
           </TableBody>
         </Table>
       </div>
+
+      {/* NUEVO: MODAL DE EDICIÓN DE SERVIDOR */}
+      <Dialog 
+        open={editModal.isOpen} 
+        onOpenChange={(open) => {
+          if (!open) setEditModal({ isOpen: false, id: null, location: '' })
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Editar Nombre del Servidor</DialogTitle>
+            <DialogDescription>
+              Modifica la ubicación de este registro sin alterar su historial de reportes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nueva ubicación / Nombre</Label>
+              <Input
+                id="edit-name"
+                value={editModal.location}
+                onChange={(e) => setEditModal(prev => ({ ...prev, location: e.target.value }))}
+                placeholder="Ej. 801 PDV RMS"
+                className="uppercase"
+                disabled={isUpdatingName}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setEditModal({ isOpen: false, id: null, location: '' })}
+              disabled={isUpdatingName}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleUpdateName} 
+              disabled={isUpdatingName || !editModal.location.trim()}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isUpdatingName ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                'Guardar Cambios'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
