@@ -48,7 +48,7 @@ export function Header({
     headerTitle = 'Estado de Respaldos'
     headerSubtitle = 'Vista gerencial del sistema de respaldos'
   } else if (activeView === 'audit') {
-    headerTitle = 'Registro Crudo de Eventos'
+    headerTitle = 'Registro de Eventos'
     headerSubtitle = 'Auditoría detallada de logs del sistema'
   } else if (activeView === 'config') {
     headerTitle = 'Catálogo Maestro de Servidores'
